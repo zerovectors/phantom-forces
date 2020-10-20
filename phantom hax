@@ -3,7 +3,7 @@ local hintmsg = Instance.new("Hint", game.CoreGui)
 local attempt = tick()
 hintmsg.Text = "Initializing UI Library This Can Take Up To 30 Seconds"
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/zerovectors/framework/master/vect0rs%20hub%20framework%20uwuware%20checkmarks", true))()
-local version = "1.1"
+local version = "1.2"
 local uiname = "Phantom Forces"
 local ui = { }
 local main = { }
@@ -37,14 +37,6 @@ local breakwin
 local messages_of_the_day = nil
 local GetAllPlayerParts
 
-game:GetService("ScriptContext").Error:Connect(function(message)
-	print("Reason: "..message)
-	if message == "HttpError: ConnectFail" then
-        MyPlr:Kick("Initializing Failed; Code 3 | ReJoin")
-    elseif message == "attempt to index nil with 'CreateWindow'" then
-        MyPlr:Kick("Initializing Failed; Code 4 | ReJoin")
-	end
-end)
 do -- loop functions 
     function loopfunctions:LoopRunning(name)
 		return loops[name].Running
@@ -170,6 +162,31 @@ do -- loops
                 end
             end
         end)
+    end, Run.RenderStepped)
+    loopfunctions:RunLoop("Camo Hack", function()
+        if library.flags.camohack then
+            for i,v in pairs(workspace.Camera:GetChildren()) do
+                if v.Name == "Right Arm" or v.Name == "Left Arm" then
+                else
+                    for i2,v2 in pairs(v:GetChildren()) do
+                        if v2:IsA("MeshPart") or v2:IsA("Part") or v2:IsA("UnionOperation") then
+                            v2.Material = "ForceField"
+                        end
+                    end
+                end
+            end
+        end
+        if library.flags.armhack then
+            for i,v in pairs(workspace.Camera:GetChildren()) do
+                if v.Name == "Right Arm" or v.Name == "Left Arm" then
+                    for i2,v2 in pairs(v:GetChildren()) do
+                        if v2:IsA("MeshPart") or v2:IsA("Part") or v2:IsA("UnionOperation") then
+                            v2.Material = "ForceField"
+                        end
+                    end
+                end
+            end
+        end
     end, Run.RenderStepped)
 end
 do -- main
@@ -394,22 +411,34 @@ do -- main
     end
     function main.tables()
         for i, v in pairs(getgc(true)) do
+            local attempt = tick()
             if type(v) == "table" and rawget(v, "deploy") then
                 deployfunc = v
             end
+            if (tick() - attempt) >= 5 then
+                game.Players.LocalPlayer:Kick("Initializing Failed! Please try again!\nError: 6")
+            end
         end
         for i, v in pairs(getgc(true)) do
+            local attempt = tick()
             if type(v) == "table" and rawget(v, "effects") then
                 breakwin = v.effects.module.breakwindow
+            end
+            if (tick() - attempt) >= 5 then
+                game.Players.LocalPlayer:Kick("Initializing Failed! Please try again!\nError: 5")
             end
         end
         for i, v in pairs(getgc(true)) do
             pcall(function()
+                local attempt = tick()
                 if type(v) == "function" and debug.getinfo(v).name == "getallparts" then
                     local a = v()
                     if type(a) == "table" then
                         GetAllPlayerParts = v --yes using game function for ESP cuz why not?
                     end
+                end
+                if (tick() - attempt) >= 5 then
+                    game.Players.LocalPlayer:Kick("Initializing Failed! Please try again!\nError: 4")
                 end
             end)
         end
@@ -435,16 +464,44 @@ do -- main
             ui.miscellaneous.instazoom:SetState(false)
         end
     end
+    function main:CamoHack(val)
+        for i,v in pairs(workspace.Camera:GetChildren()) do
+            if v.Name == "Right Arm" or v.Name == "Left Arm" then
+            else
+                for i2,v2 in pairs(v:GetChildren()) do
+                    if v2:IsA("MeshPart") or v2:IsA("Part") or v2:IsA("UnionOperation") then
+                        v2.Color = val
+                    end
+                end
+            end
+        end
+    end
+    function main:ArmHack(val)
+        for i,v in pairs(workspace.Camera:GetChildren()) do
+            if v.Name == "Right Arm" or v.Name == "Left Arm" then
+                for i2,v2 in pairs(v:GetChildren()) do
+                    if v2:IsA("MeshPart") or v2:IsA("Part") or v2:IsA("UnionOperation") then
+                        v2.Color = val
+                    end
+                end
+            end
+        end
+    end
     function main:BreakWindows()
+        local attempt = tick()
         for i,v in pairs(workspace.Map:GetDescendants()) do
             if v:IsA("BasePart") and tostring(v) == "Window" then
                 breakwin(v, v, nil, true, true,nil,nil,nil)
             end
         end
+        if (tick() - attempt) >= 5 then
+            game.Players.LocalPlayer:Kick("Initializing Failed! Please try again!\nError: 2")
+        end
     end
     getrenv().Fall = false
     local OldFunction
     function HookItNow()
+        local attempt = tick()
         local func
         for i, v in pairs(getgc(true)) do
             if type(v) == "function" and debug.getinfo(v).name == "send" then
@@ -465,9 +522,10 @@ do -- main
         if name == 'closeconnection' and _G.Spam == 1 then --anti kick
             return
             end
-        if name == 'changehealthx' then
-            if #Args > 4 and Args[3] == 'Falling' and getrenv().Fall then --anti fall damage
-            return
+        if name == 'falldamage' then
+            if #Args > 1 and getrenv().Fall then --anti fall damage
+                print'done'
+                return
             end
         end
         return OldFunction(self, ...)
@@ -676,8 +734,10 @@ do -- main
             warn(i,v)
         end
     end
-    function main:destroyhint()
-        hintmsg:Remove()
+    function main:Spooks()
+        ui.cursorcolor:SetColor(Color3.fromRGB(0, 102, 0))
+        ui.main_colour:SetColor(Color3.fromRGB(255, 128, 0))
+        ui.topbarcolor:SetColor(Color3.fromRGB(255, 128, 0))
     end
     Plrs.PlayerAdded:Connect(function(Plr)
         if getrenv().creator_accounts[Plr.UserId] then
@@ -813,6 +873,23 @@ do -- main
                     end
                 end
             end
+            for i,v in next, getgc(true) do -- no gun sway
+                if type(v) == "table" and rawget(v,'name') then
+                    if library.flag.nogunsway then
+                        v.swayamp = 0
+                        v.swayspeed  = 0
+                        v.steadyspeed  = 0
+                        v.breathspeed  = 0
+                        v.recoverspeed = 1
+                    else
+                        v.swayamp = 25
+                        v.swayspeed  = 1
+                        v.steadyspeed  = 5
+                        v.breathspeed  = 0.004
+                        v.recoverspeed = 0.005
+                    end
+                end
+            end
             for i,v in next, getgc(true) do -- instant zoom
                 if type(v) == "table" and rawget(v,'name') then
                     if library.flags.instazoom then
@@ -855,7 +932,7 @@ do -- main
             end
         end)
     end)
-    end
+end
 do -- ui
     function ui:Init()
         do -- visuals
@@ -877,15 +954,12 @@ do -- ui
             ui.espsettings = ui.visuals:AddFolder("ESP Settings")
             ui.espsettings:AddColor({text = "Ally Color", flag = "allycolor", color = Color3.fromRGB(221, 3, 255), callback = function(a)
                 main.espsettings.Colors.Ally = a
-                main:updatecolors()
             end})
             ui.espsettings:AddColor({text = "Enemy Color", flag = "enemycolor", color = Color3.fromRGB(221, 3, 255), callback = function(a)
                 main.espsettings.Colors.Enemy = a
-                main:updatecolors()
             end})
             ui.espsettings:AddColor({text = "Neutral Color", flag = "enemycolor", color = Color3.fromRGB(221, 3, 255), callback = function(a)
                 main.espsettings.Colors.Neutral = a
-                main:updatecolors()
             end})
         end
         do -- character
@@ -943,6 +1017,9 @@ do -- ui
             ui.miscellaneous.nospread = ui.miscellaneous.gunmods:AddToggle({text = "No Spread", flag = "nospread", callback = function(a)
                 library.flags.nospread = a
             end})
+            ui.miscellaneous.nogunsway = ui.miscellaneous.gunmods:AddToggle({text = "No Gun Sway", flag = "nogunsway", callback = function(a)
+                library.flags.nogunsway = a
+            end})
             ui.miscellaneous.fastbullets = ui.miscellaneous.gunmods:AddToggle({text = "Fast Bullets", flag = "fastbullets", callback = function(a)
                 library.flags.fastbullets = a
             end})
@@ -952,6 +1029,18 @@ do -- ui
             ui.miscellaneous.instazoom = ui.miscellaneous.gunmods:AddToggle({text = "Instant Zoom", flag = "instazoom", callback = function(a)
                 library.flags.instazoom = a
             end})
+            ui.miscellaneous.camohack = ui.miscellaneous:AddToggleFolder({text = "Camo Hack", flag = "camohack", callback = function(a)
+                library.flags.camohack = a
+            end})
+            ui.miscellaneous.camocolour = ui.miscellaneous.camohack:AddColor({text = "Camo Colour", color = Color3.fromRGB(255, 51, 255), callback = function(a)
+                main:CamoHack(a)
+            end})
+            ui.miscellaneous.armhack = ui.miscellaneous:AddToggleFolder({text = "Arm Hack", flag = "armhack", callback = function(a)
+                library.flags.armhack = a
+            end})
+            ui.miscellaneous.armhack = ui.miscellaneous.armhack:AddColor({text = "Arm Colour", color = Color3.fromRGB(255, 51, 255), callback = function(a)
+                main:ArmHack(a)
+            end})
             ui.miscellaneous:AddButton({text = "Break Windows", callback = function()
                 main:BreakWindows()
             end})
@@ -960,55 +1049,55 @@ do -- ui
             end})
         end
         do -- ui settings
-            main.uisettings = library:CreateWindow("UI Settings")
-            main.uisettings:AddColor({text = "Cursor Color", flag = "cursorcolor", color = Color3.fromRGB(255, 51, 255), callback = function(a)
+            ui.uisettings = library:CreateWindow("UI Settings")
+            ui.cursorcolor = ui.uisettings:AddColor({text = "Cursor Color", flag = "cursorcolor", color = Color3.fromRGB(255, 51, 255), callback = function(a)
                 main:cursorcolor(a)
             end})
-            main.uisettings:AddColor({text = "Main Color", color = Color3.fromRGB(255, 51, 255), callback = function(a)
+            ui.main_colour = ui.uisettings:AddColor({text = "Main Color", color = Color3.fromRGB(255, 51, 255), callback = function(a)
                 getrenv().ui_settings.main_colour = a
             end})
-            main.uisettings:AddSlider({text = "Title Size", value = 17, min = 10, max = 25, callback = function(a)
+            ui.title_size = ui.uisettings:AddSlider({text = "Title Size", value = 17, min = 10, max = 25, callback = function(a)
                 getrenv().ui_settings.title_size = a
             end})
-            main.uisettings:AddSlider({text = "Text Size", value = 16, min = 10, max = 25, callback = function(a)
+            ui.uisettings:AddSlider({text = "Text Size", value = 16, min = 10, max = 25, callback = function(a)
                 getrenv().ui_settings.font_size = a
             end})
             if getrenv().creator_accounts[MyPlr.UserId] or getrenv().admin_accounts[MyPlr.UserId] then
-                main.uisettings.annoyingstuff = main.uisettings:AddToggleFolder({text = "Shit Smail Hates!", state = true, flag = "annoyshit", callback = function(a)
+                ui.uisettings.annoyingstuff = ui.uisettings:AddToggleFolder({text = "Shit Smail Hates!", state = true, flag = "annoyshit", callback = function(a)
                     library.flags["annoyshit"] = a
                     main:AnnoyingShitToggle()
                 end})
-                main.uisettings.cursor = main.uisettings.annoyingstuff:AddToggle({text = "Cursor", state = true, flag = "CursorTog", callback = function(a)
+                ui.uisettings.cursor = ui.uisettings.annoyingstuff:AddToggle({text = "Cursor", state = true, flag = "CursorTog", callback = function(a)
                     library.flags["CursorTog"] = a
                     main:CursorTog()
                 end})
-                main.uisettings.watermark = main.uisettings.annoyingstuff:AddToggle({text = "UI Watermark", flag = "watermark", state = true, callback = function(a)
+                ui.uisettings.watermark = ui.uisettings.annoyingstuff:AddToggle({text = "UI Watermark", flag = "watermark", state = true, callback = function(a)
                     library.flags["watermark"] = a
                     main:Watermark()
                 end})
             else
-                main.uisettings.watermark = main.uisettings:AddToggle({text = "UI Watermark", flag = "watermark", state = true, callback = function(a)
+                ui.uisettings.watermark = ui.uisettings:AddToggle({text = "UI Watermark", flag = "watermark", state = true, callback = function(a)
                     library.flags["watermark"] = a
                     main:Watermark()
                 end})
             end
-            main.uisettings.togglekey = main.uisettings:AddBind({text = "Toggle UI", key = "Q", callback = function() 
+            ui.togglekey = ui.uisettings:AddBind({text = "Toggle UI", key = "Q", callback = function() 
                 library:Close()
             end})
-            main.uisettings.savesettings = main.uisettings:AddButton({text = "Save Settings", callback = function()
+            ui.savesettings = ui.uisettings:AddButton({text = "Save Settings", callback = function()
                 main:SaveSettings()
             end})
-            main.uisettings.deletesettings = main.uisettings:AddButton({text = "Delete Settings", callback = function()
+            ui.deletesettings = ui.uisettings:AddButton({text = "Delete Settings", callback = function()
                 main:DeleteSettings()
             end})
-            main.topbar = main.uisettings:AddFolder("Top Bar")
-            main.topbar:AddColor({text = "Line Colour", flag = "color", color = Color3.fromRGB(255, 51, 255), callback = function(a)
+            ui.topbar = ui.uisettings:AddFolder("Top Bar")
+            ui.topbarcolor = ui.topbar:AddColor({text = "Line Colour", flag = "color", color = Color3.fromRGB(255, 51, 255), callback = function(a)
                 main:splitlinecolor(a)
             end})
-            main.topbar:AddSlider({text = "Transparency", value = 0, min = 0, max = 1, float = 0.1, callback = function(a)
+            ui.topbar:AddSlider({text = "Transparency", value = 0, min = 0, max = 1, float = 0.1, callback = function(a)
                 main:splitlinetransparency(a)
             end})
-            main.topbar:AddSlider({text = "Line Thickness", value = 1, min = 1, max = 4, callback = function(a)
+            ui.topbar:AddSlider({text = "Line Thickness", value = 1, min = 1, max = 4, callback = function(a)
                 main:splitlinethickness(a)
             end})
         end
@@ -1043,12 +1132,17 @@ end
 
 main:SystemChat("Okie, gimme a few secs to setup the ui uwu")
 main.tables()
+if (tick() - attempt) >= 30 then
+    game.Players.LocalPlayer:Kick("Initializing Failed! Please try again!\nError: 1")
+end
 ui:Init()
 library:Init()
+main:Spooks()
 library:Close()
 main:AutoLoadSettings()
 main:Console("Initialization Complete, Enjoy 😎")
-main:destroyhint()
+tick()
+hintmsg:Remove()
 library:SendNotification("Vect0rs Hub Loaded "..uiname.." v"..version)
 main:SystemChat("Andd Done, Have Fun Or Whatever")
 main:SystemChat("Loaded "..uiname)
