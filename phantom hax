@@ -1137,7 +1137,6 @@ if (tick() - attempt) >= 30 then
 end
 ui:Init()
 library:Init()
-main:Spooks()
 library:Close()
 main:AutoLoadSettings()
 main:Console("Initialization Complete, Enjoy 😎")
